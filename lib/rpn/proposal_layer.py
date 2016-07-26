@@ -23,9 +23,10 @@ class ProposalLayer(caffe.Layer):
 
     def setup(self, bottom, top):
         # parse the layer parameter string, which must be valid YAML
-        layer_params = yaml.load(self.param_str_)
+        layer_params = yaml.load(self.param_str)
 
         self._feat_stride = layer_params['feat_stride']
+        self._phase = layer_params['phase']  # some sort of hack
         anchor_scales = layer_params.get('scales', (8, 16, 32))
         self._anchors = generate_anchors(scales=np.array(anchor_scales))
         self._num_anchors = self._anchors.shape[0]
@@ -61,7 +62,7 @@ class ProposalLayer(caffe.Layer):
         assert bottom[0].data.shape[0] == 1, \
             'Only single item batches are supported'
 
-        cfg_key = str(self.phase) # either 'TRAIN' or 'TEST'
+        cfg_key = str(self._phase) # either 'TRAIN' or 'TEST'
         pre_nms_topN  = cfg[cfg_key].RPN_PRE_NMS_TOP_N
         post_nms_topN = cfg[cfg_key].RPN_POST_NMS_TOP_N
         nms_thresh    = cfg[cfg_key].RPN_NMS_THRESH
